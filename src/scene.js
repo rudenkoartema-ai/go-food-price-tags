@@ -15,14 +15,20 @@ const BLACK = [0, 0, 0];
 function splitBalanced(str) {
   const words = str.split(' ');
   if (words.length < 2) return null;
-  let best = null;
+  const cands = [];
   for (let i = 1; i < words.length; i++) {
     const a = words.slice(0, i).join(' ');
     const b = words.slice(i).join(' ');
     const wa = T.inkExtent(T.NAME, a).w, wb = T.inkExtent(T.NAME, b).w;
-    const m = Math.max(wa, wb);
-    if (!best || m < best.m) best = { lines: [a, b], m };
+    // a short preposition ("З", "В", "ДО") belongs with the word after it, as on the original tags
+    const dangling = words[i - 1].length <= 2 && words.length > 2 && wa >= wb;
+    cands.push({ lines: [a, b], m: Math.max(wa, wb), dangling });
   }
+  cands.sort((x, y) => x.m - y.m);
+  const best = cands[0];
+  const pref = cands.filter((c) => !c.dangling)[0];
+  // keep the preposition with the next word unless that makes the text clearly smaller
+  if (best.dangling && pref && pref.m <= best.m * 1.35) return pref;
   return best;
 }
 
@@ -95,15 +101,6 @@ function staticScene(fmtKey) {
   items.push({ kind: 'path', d: P.transform(A.logo.lime, m), color: lime });
   items.push({ kind: 'path', d: P.transform(A.logo.white, m), color: white });
   items.push({ kind: 'ring', cx: art.logo.cx, cy: art.logo.cy, r: art.logo.r - (A.logo.ringW * s) / 2, w: A.logo.ringW * s, color: lime });
-  const cap = A.logo.caption;
-  const capStr = 'BRAND by COFFEE GO';
-  const cwu = T.widthUnits(T.NAME, capStr);
-  const ck = (cap.width * s) / cwu;
-  items.push({
-    kind: 'path',
-    d: T.textPath(T.NAME, capStr, ck, art.logo.cx + cap.cx * s - (cwu * ck) / 2, art.logo.cy + cap.baseline * s, 0),
-    color: white,
-  });
   return items;
 }
 
