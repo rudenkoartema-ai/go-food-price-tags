@@ -1,0 +1,13 @@
+# Render Blueprint: статический сайт, без сервера и без платных сервисов.
+# Подключите ЭТОТ ОТДЕЛЬНЫЙ репозиторий в Render (New + > Blueprint) - рабочая программа в другом репозитории не затрагивается.
+services:
+  - type: web
+    name: go-food-price-tags
+    runtime: static
+    buildCommand: node tools/build_html.js
+    staticPublishPath: dist
+    autoDeployTrigger: commit
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
