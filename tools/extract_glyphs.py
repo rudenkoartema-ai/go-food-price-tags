@@ -115,7 +115,7 @@ def rot(pts, th, c):
 
 # ------------------------------------------------------------------ names
 DESC = set('ДЦЩ')          # letters with a tail below the baseline
-SKIP_CAP = set('ДЦЩЙЇ')    # not used for cap-height estimation
+SKIP_CAP = set('ДЦЩЙЇ-')    # not used for cap-height estimation
 
 
 def split_lines(comps, nlines):

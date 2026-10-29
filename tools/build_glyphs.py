@@ -13,7 +13,11 @@ Y0 = 1400
 
 
 def best(table, ch):
-    return max(table[ch], key=lambda i: i['cap_px'])
+    ins = table[ch]
+    if len(ins) < 3:
+        return max(ins, key=lambda i: i['cap_px'])
+    med = float(np.median([i['w'] for i in ins]))
+    return min(ins, key=lambda i: (abs(i['w'] - med) / med, -i['cap_px']))
 
 
 def to_mask(inst, ox=0.0):
@@ -137,13 +141,19 @@ ellipse(m, 75, 70, 70, 75, -10)
 poly_fill(m, [(40, 20), (120, 60), (20, -170), (-40, -140)])
 G[','] = mask_to_inst(m, ',')
 
+# real glyphs found in the sheets win over the synthesised ones
+for ch in 'ЬЩ-ЇЄҐ':
+    if ch in L:
+        G[ch] = best(L, ch)
+
 # ---- digits
 D = {ch: best(d['digs'], ch) for ch in d['digs']}
-wd = np.median([D[k]['w'] for k in '2345678'])
-o = G['О']
-sx = wd / o['w']
-polys = [(np.stack([p[:, 0] * sx, p[:, 1]], 1), h) for p, h in o['polys']]
-D['0'] = dict(polys=polys, w=o['w'] * sx, cap_px=0)
+if '0' not in D:
+    wd = np.median([D[k]['w'] for k in '2345678'])
+    o = G['О']
+    sx = wd / o['w']
+    polys = [(np.stack([p[:, 0] * sx, p[:, 1]], 1), h) for p, h in o['polys']]
+    D['0'] = dict(polys=polys, w=o['w'] * sx, cap_px=0)
 
 GAP_N = float(os.environ.get('GAP_N', '60'))
 GAP_D = float(os.environ.get('GAP_D', '95'))
